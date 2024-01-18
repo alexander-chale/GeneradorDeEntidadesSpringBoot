@@ -66,7 +66,7 @@ public class generadorEntidades {
 //
         //ResultSet rs = st.executeQuery("select * from cusg."+nombre);
 
-        ResultSet rs = st.executeQuery("select * from cusg.contraparte");
+        ResultSet rs = st.executeQuery("select * from personal.profesiones");
         
         rsmetadatos =  rs.getMetaData();
 
@@ -138,8 +138,9 @@ public class generadorEntidades {
                         default:
                          // System.out.println("desconocido");
                       }
+                      String nombreCamelcase = utilitarios.camelCase(rsmetadatos.getColumnName(i));
                       System.out.println(rsmetadatos.getColumnTypeName(i) + " " +rsmetadatos.getColumnName(i) );
-                    out.println("   private "+tipo+" " + rsmetadatos.getColumnName(i) + ";\n");
+                    out.println("   private "+tipo+" " + nombreCamelcase + ";\n");
 
                
                 }
