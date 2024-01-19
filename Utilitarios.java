@@ -37,6 +37,21 @@ public class Utilitarios {
 
     }
 
+    public String camelCase(String s) {
+        StringBuffer out = new StringBuffer();
+        boolean doUppercase = false;
+        for(int i = 0; i<s.length();i++) {
+           char c = s.charAt(i);
+           // append if appropriate
+           if(c != '_') {
+              out.append(doUppercase ? Character.toUpperCase(c) : c);
+           }
+           // set capitalisation for next iteration
+           doUppercase = ( c == '_' || Character.isDigit(c));
+        }
+        return out.toString();
+     }
+
     public void deleteFile(File file) {
         // Elimina archivos y careptas creados previamente
         if (file.exists()) {
