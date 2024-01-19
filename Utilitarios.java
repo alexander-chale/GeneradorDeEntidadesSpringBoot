@@ -10,6 +10,13 @@ public class Utilitarios {
         return palabra.replaceAll("[^A-Za-z]", "");
     }
 
+    public String generaTipoJava(String tipo) {
+        String[] parts = tipo.split("\\.");
+                    String tipoJava = parts[2]; // java0.lang1.String2
+                   return tipoJava;
+    }
+
+
     public String generaMayusculaInicial(String palabra) {
         // Coloca la primera letra de la entidad en mayúscula para poder generar las
         // clases.

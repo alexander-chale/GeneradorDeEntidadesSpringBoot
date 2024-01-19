@@ -14,26 +14,27 @@ public class generadorEntidades {
 
         String nombre = "Profesiones";
         Utilitarios utilitarios = new Utilitarios();
-        /* Scanner nombreTabla = new Scanner(System.in);
-        String nombre = null;
-
-        Boolean verdadero = true;
-        while (verdadero) {
-            System.out.println("Ingrese el nombre de la tabla a generar la entidad");
-            nombre = nombreTabla.next();
-
-            // System.out.println("asi quedo la palabra " + nombreEntidad);
-
-            if (!nombre.isEmpty()) {
-                verdadero = false;
-
-            } else {
-                verdadero = true;
-
-            }
-        }
-
-        */
+        /*
+         * Scanner nombreTabla = new Scanner(System.in);
+         * String nombre = null;
+         * 
+         * Boolean verdadero = true;
+         * while (verdadero) {
+         * System.out.println("Ingrese el nombre de la tabla a generar la entidad");
+         * nombre = nombreTabla.next();
+         * 
+         * // System.out.println("asi quedo la palabra " + nombreEntidad);
+         * 
+         * if (!nombre.isEmpty()) {
+         * verdadero = false;
+         * 
+         * } else {
+         * verdadero = true;
+         * 
+         * }
+         * }
+         * 
+         */
 
         Properties config = new Properties();
         InputStream configInput = null;
@@ -50,29 +51,29 @@ public class generadorEntidades {
         //
         Connection conexion;
         Statement st;
-        String host="localhost", base_de_datos="posold01", usuario="postgres", contraseña="password";
+        String host = "localhost", base_de_datos = "posold01", usuario = "postgres", contraseña = "password";
         DatabaseMetaData metadatos;
         ResultSetMetaData rsmetadatos;
 
         Class.forName("org.postgresql.Driver");
 
-        conexion = DriverManager.getConnection("jdbc:postgresql://"+host+"/"+base_de_datos, usuario, contraseña);
+        conexion = DriverManager.getConnection("jdbc:postgresql://" + host + "/" + base_de_datos, usuario, contraseña);
 
         st = conexion.createStatement();
 
         System.out.println("Obteniendo Informacion sobre una base de datos...");
-        
-        System.out.println("\nObteniendo Informacion sobre una consulta con un ResultSet...");
-//
-        //ResultSet rs = st.executeQuery("select * from cusg."+nombre);
 
-        ResultSet rs = st.executeQuery("select * from personal.profesiones");
-        
-        rsmetadatos =  rs.getMetaData();
+        System.out.println("\nObteniendo Informacion sobre una consulta con un ResultSet...");
+        //
+        // ResultSet rs = st.executeQuery("select * from cusg."+nombre);
+
+        ResultSet rs = st.executeQuery("select * from cusg.coincide_lista");
+
+        rsmetadatos = rs.getMetaData();
 
         int col = rsmetadatos.getColumnCount();
 
-        System.out.println("Columnas: "+col);
+        System.out.println("Columnas: " + col);
 
         File archivo = new File(nombre);
         utilitarios.deleteFile(archivo);
@@ -115,34 +116,63 @@ public class generadorEntidades {
                 out.println("");
                 out.println("   @Id");
                 out.println("");
-               
-                //obteniendo numero de columnas
 
-                String tipo = null;
-                for(int i=1;i<=col;i++){
-                    //out.println("   @Column(nullable = false, updatable = false, length = 4)");
-                    switch(rsmetadatos.getColumnTypeName(i)) {
-                        case "varchar":
-                          tipo = "String";
-                          break;
-                        case "date":
-                          tipo = "LocalDate";
-                          break;
-                        case "numeric":
-                          tipo = "BigDecimal";
-                          break;
-                        
-                        case "timestamptz":
-                          tipo = "OffsetDateTime";
-                          break;
+                // obteniendo numero de columnas
+
+                // String tipo = null;
+                for (int i = 1; i <= col; i++) {
+                    // out.println(" @Column(nullable = false, updatable = false, length = 4)");
+
+                    String tipoJava = utilitarios.generaTipoJava(rsmetadatos.getColumnClassName(i));
+
+                    String nombreCamelcase = utilitarios.camelCase(rsmetadatos.getColumnName(i));
+
+                    System.out.println(" null " + rsmetadatos.isNullable(i));
+                    System.out.println("tipo java es " + tipoJava);
+                    System.out.println("");
+
+                    System.out.print("@Column");
+                   
+                    
+                    if(rsmetadatos.isNullable(i)==0 ){
+                        System.out.println("(nullable = false");
+                    }
+                    if(rsmetadatos.isNullable(i)==0 && tipoJava.equals("Date") || tipoJava.equals("Timestamp") ){
+                        System.out.println(")");
+                    }
+                    
+                    if(rsmetadatos.isNullable(i)==1 && !tipoJava.equals("Date") || !tipoJava.equals("Timestamp") ){
+                        System.out.println("(length = " + rsmetadatos.getColumnDisplaySize(i)+")");
+                    }
+                    
+                 
+               
+/*
+                     switch (rsmetadatos.isNullable(i)) {
+                        case 0:
+                        System.out.println("@Column(nullable = false");
+                            break;
+                        case 1:
+                        System.out.println("@Column");
+                            break;
+                     
                         default:
-                         // System.out.println("desconocido");
-                      }
-                      String nombreCamelcase = utilitarios.camelCase(rsmetadatos.getColumnName(i));
-                      System.out.println(rsmetadatos.getColumnTypeName(i) + " " +rsmetadatos.getColumnName(i) );
-                    out.println("   private "+tipo+" " + nombreCamelcase + ";\n");
+                            break;
+                     }
+                      */
+                     
+                    System.out.println("private " + tipoJava + " " + nombreCamelcase);
 
-               
+                    System.out.println("");
+                    if (rsmetadatos.isNullable(i) == 0){
+                        out.println("   @Column(nullable = false, length = "
+                            + rsmetadatos.getColumnDisplaySize(i) + ")");
+                    } else{
+                        out.println("   @Column(length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
+
+                    }
+                    out.println("   private " + tipoJava + " " + nombreCamelcase + ";\n");
+
                 }
                 out.println("");
                 out.println("}");
@@ -151,6 +181,6 @@ public class generadorEntidades {
                 // exception handling left as an exercise for the reader
             }
         }
-        
+
     }
 }

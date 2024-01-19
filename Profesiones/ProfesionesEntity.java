@@ -28,17 +28,23 @@ public class Profesiones extends Base {
 
    @Id
 
-   private String codigoProfesion;
+   @Column(nullable = false, length = 11)
+   private Integer coLista;
 
-   private String descripcion;
+   @Column(nullable = false, length = 11)
+   private Integer coEnteLista;
 
-   private String ocptm;
+   @Column(length = 14)
+   private String coRifUsuaCont;
 
-   private String ocpti;
+   @Column(length = 13)
+   private Date feConsultaLista;
 
-   private String ocpts;
+   @Column(length = 100)
+   private String txExplicaLista;
 
-   private String ocpu;
+   @Column(length = 14)
+   private String coRifUsuaContId;
 
 
 }
