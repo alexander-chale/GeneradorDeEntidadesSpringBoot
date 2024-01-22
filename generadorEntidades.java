@@ -67,7 +67,7 @@ public class generadorEntidades {
         //
         // ResultSet rs = st.executeQuery("select * from cusg."+nombre);
 
-        ResultSet rs = st.executeQuery("select * from cusg.coincide_lista");
+        ResultSet rs = st.executeQuery("select * from cusg.contraparte");
 
         rsmetadatos = rs.getMetaData();
 
@@ -79,7 +79,7 @@ public class generadorEntidades {
         utilitarios.deleteFile(archivo);
 
         if (archivo.mkdir()) {
-            System.out.println("   Directorio " + nombre + " creado satisfactoriamente.");
+            System.out.println("   Directorio " + nombre + " creado satisfactoriamente.\n");
 
             try (FileWriter fw = new FileWriter(
                     nombre + "/" + archivo + "Entity.java",
@@ -120,6 +120,7 @@ public class generadorEntidades {
                 // obteniendo numero de columnas
 
                 // String tipo = null;
+                 
                 for (int i = 1; i <= col; i++) {
                     // out.println(" @Column(nullable = false, updatable = false, length = 4)");
 
@@ -127,54 +128,57 @@ public class generadorEntidades {
 
                     String nombreCamelcase = utilitarios.camelCase(rsmetadatos.getColumnName(i));
 
-                    System.out.println(" null " + rsmetadatos.isNullable(i));
-                    System.out.println("tipo java es " + tipoJava);
-                    System.out.println("");
+                   // System.out.println(" null " + rsmetadatos.isNullable(i));
+                   // System.out.println("tipo java es " + tipoJava);
+                   // System.out.println("");
 
-                    System.out.print("@Column");
                    
-                    
-                    if(rsmetadatos.isNullable(i)==0 ){
-                        System.out.println("(nullable = false");
+                   
+                     System. out.print("@Column");
+                    if(rsmetadatos.isNullable(i)==0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")){
+                        System.out.println("(nullable = false)");
                     }
-                    if(rsmetadatos.isNullable(i)==0 && tipoJava.equals("Date") || tipoJava.equals("Timestamp") ){
-                        System.out.println(")");
+                    if(rsmetadatos.isNullable(i)==0 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp")) ){
+                        System.out.println("(nullable = false, length = " + rsmetadatos.getColumnDisplaySize(i)+")");
                     }
-                    
-                    if(rsmetadatos.isNullable(i)==1 && !tipoJava.equals("Date") || !tipoJava.equals("Timestamp") ){
+                    if(rsmetadatos.isNullable(i)==1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))){
                         System.out.println("(length = " + rsmetadatos.getColumnDisplaySize(i)+")");
+                      //  System.out.println("Esto date diferente " + (!tipoJava.equals("Date") || !tipoJava.equals("Timestamp")) );
+                      
                     }
+                    if(rsmetadatos.isNullable(i)==1 && (tipoJava.equals("Date") && tipoJava.equals("Timestamp")) ){
+                        System.out.println("\n");
+                    }
+
+                    System.out.println("private " + tipoJava + " " + nombreCamelcase+";");
+                  
                     
                  
                
-/*
-                     switch (rsmetadatos.isNullable(i)) {
-                        case 0:
-                        System.out.println("@Column(nullable = false");
-                            break;
-                        case 1:
-                        System.out.println("@Column");
-                            break;
-                     
-                        default:
-                            break;
-                     }
-                      */
-                     
-                    System.out.println("private " + tipoJava + " " + nombreCamelcase);
+                    out.print("@Column");
 
                     System.out.println("");
-                    if (rsmetadatos.isNullable(i) == 0){
-                        out.println("   @Column(nullable = false, length = "
-                            + rsmetadatos.getColumnDisplaySize(i) + ")");
-                    } else{
-                        out.println("   @Column(length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
-
+                    if(rsmetadatos.isNullable(i)==0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")){
+                        out.println("(nullable = false)");
                     }
-                    out.println("   private " + tipoJava + " " + nombreCamelcase + ";\n");
-
-                }
-                out.println("");
+                    if(rsmetadatos.isNullable(i)==0 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp")) ){
+                        out.println("(nullable = false, length = " + rsmetadatos.getColumnDisplaySize(i)+")");
+                    }
+                    if(rsmetadatos.isNullable(i)==1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))){
+                        out.println("(length = " + rsmetadatos.getColumnDisplaySize(i)+")");
+                      //  System.out.println("Esto date diferente " + (!tipoJava.equals("Date") || !tipoJava.equals("Timestamp")) );
+                      
+                    }
+                    if(rsmetadatos.isNullable(i)==1 && (tipoJava.equals("Date") || tipoJava.equals("Timestamp")) ){
+                        out.println("");
+                    }
+                    
+                    out.println("private " + tipoJava + " " + nombreCamelcase+";");
+                  
+                
+                    out.println("");
+                }    
+                
                 out.println("}");
 
             } catch (IOException e) {
