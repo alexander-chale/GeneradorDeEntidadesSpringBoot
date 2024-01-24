@@ -12,29 +12,26 @@ import java.sql.*;
 public class generadorEntidades {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
 
-        String nombre = "Profesiones";
         Utilitarios utilitarios = new Utilitarios();
-        /*
-         * Scanner nombreTabla = new Scanner(System.in);
-         * String nombre = null;
-         * 
-         * Boolean verdadero = true;
-         * while (verdadero) {
-         * System.out.println("Ingrese el nombre de la tabla a generar la entidad");
-         * nombre = nombreTabla.next();
-         * 
-         * // System.out.println("asi quedo la palabra " + nombreEntidad);
-         * 
-         * if (!nombre.isEmpty()) {
-         * verdadero = false;
-         * 
-         * } else {
-         * verdadero = true;
-         * 
-         * }
-         * }
-         * 
-         */
+
+        Scanner nombreTabla = new Scanner(System.in);
+        String nombre = null;
+
+        Boolean verdadero = true;
+        while (verdadero) {
+            System.out.println("Ingrese el nombre de la tabla a generar la entidad");
+            nombre = nombreTabla.next();
+
+            // System.out.println("asi quedo la palabra " + nombreEntidad);
+
+            if (!nombre.isEmpty()) {
+                verdadero = false;
+
+            } else {
+                verdadero = true;
+
+            }
+        }
 
         Properties config = new Properties();
         InputStream configInput = null;
@@ -45,29 +42,30 @@ public class generadorEntidades {
         String dataSourceUrl = config.getProperty("datasource.url");
         String dataSourceUsername = config.getProperty("datasource.username");
         String dataSourcePassword = config.getProperty("datasource.password");
+        String schema = config.getProperty("schema");
+        String paquete = config.getProperty("paquete");
 
         System.out.println("CREANDO EL ARCHIVO ENTIDAD... ");
 
         //
         Connection conexion;
         Statement st;
-        String host = "localhost", base_de_datos = "posold01", usuario = "postgres", contraseña = "password";
         DatabaseMetaData metadatos;
         ResultSetMetaData rsmetadatos;
 
         Class.forName("org.postgresql.Driver");
 
-        conexion = DriverManager.getConnection("jdbc:postgresql://" + host + "/" + base_de_datos, usuario, contraseña);
+        conexion = DriverManager.getConnection(dataSourceUrl, dataSourceUsername, dataSourcePassword);
 
         st = conexion.createStatement();
 
         System.out.println("Obteniendo Informacion sobre una base de datos...");
 
         System.out.println("\nObteniendo Informacion sobre una consulta con un ResultSet...");
-        //
-        // ResultSet rs = st.executeQuery("select * from cusg."+nombre);
 
-        ResultSet rs = st.executeQuery("select * from cusg.represent_legal");
+        ResultSet rs = st.executeQuery("select * from " + schema + "." + nombre);
+
+        System.out.println("select * from " + schema + "." + nombre);
 
         rsmetadatos = rs.getMetaData();
 
@@ -85,26 +83,31 @@ public class generadorEntidades {
                 "  ON k2.constraint_schema = fk.unique_constraint_schema\n" + //
                 " AND k2.constraint_name = fk.unique_constraint_name\n" + //
                 " AND k2.ordinal_position = k1.position_in_unique_constraint\n" + //
-                " where k1.table_name ='represent_legal';");
+                " where k1.table_name ='" + nombre + "';");
 
         String camelCaseRelacionesCampo = null;
         String camelCaseRelacionesTabla = null;
-
 
         System.out.println("Columnas: " + col);
 
         File archivo = new File(nombre);
         utilitarios.deleteFile(archivo);
 
+        File carpetaEntity = new File(nombre + "/entity");
+
         if (archivo.mkdir()) {
             System.out.println("   Directorio " + nombre + " creado satisfactoriamente.\n");
+        }
+
+        if (carpetaEntity.mkdir()) {
+            System.out.println("   Directorio  entity creado satisfactoriamente.\n");
 
             try (FileWriter fw = new FileWriter(
-                    nombre + "/" + archivo + "Entity.java",
+                    nombre + "/entity/" + utilitarios.generaMayusculaInicial(nombre) + "Entity.java",
                     true);
                     BufferedWriter bw = new BufferedWriter(fw);
                     PrintWriter out = new PrintWriter(bw)) {
-                out.println("package com.bcv.cusg.profesiones.entity;");
+                out.println("package " + paquete + "." + nombre + ".entity;");
                 out.println("");
                 out.println("import jakarta.persistence.Column;");
                 out.println("import jakarta.persistence.Entity;");
@@ -122,33 +125,24 @@ public class generadorEntidades {
                 out.println("import com.fasterxml.jackson.annotation.JsonIgnore;");
                 out.println("");
                 out.println("@Entity");
-                out.println("@Table(schema = \"cusg\", name = \"accion_pregunta\")");
+                out.println("@Table(schema = " + schema + ", name = " + nombre + ")");
                 out.println("@Getter");
                 out.println("@Setter");
                 out.println("@NoArgsConstructor");
                 out.println("@AllArgsConstructor");
                 out.println("");
-                out.println("public class Profesiones extends Base {");
+                out.println("public class " + utilitarios.generaMayusculaInicial(nombre) + " extends Base {");
                 out.println("");
                 out.println("   private static final long serialVersionUID = 1L;");
                 out.println("");
                 out.println("   @Id");
                 out.println("");
 
-                // obteniendo numero de columnas
-
-                // String tipo = null;
-
                 for (int i = 1; i <= col; i++) {
-                    // out.println(" @Column(nullable = false, updatable = false, length = 4)");
 
                     String tipoJava = utilitarios.generaTipoJava(rsmetadatos.getColumnClassName(i));
 
                     String nombreCamelcase = utilitarios.camelCase(rsmetadatos.getColumnName(i));
-
-                    // System.out.println(" null " + rsmetadatos.isNullable(i));
-                    // System.out.println("tipo java es " + tipoJava);
-                    // System.out.println("");
 
                     System.out.print("@Column");
                     if (rsmetadatos.isNullable(i) == 0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")) {
@@ -159,8 +153,6 @@ public class generadorEntidades {
                     }
                     if (rsmetadatos.isNullable(i) == 1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))) {
                         System.out.println("(length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
-                        // System.out.println("Esto date diferente " + (!tipoJava.equals("Date") ||
-                        // !tipoJava.equals("Timestamp")) );
 
                     }
                     if (rsmetadatos.isNullable(i) == 1 && (tipoJava.equals("Date") && tipoJava.equals("Timestamp"))) {
@@ -180,8 +172,6 @@ public class generadorEntidades {
                     }
                     if (rsmetadatos.isNullable(i) == 1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))) {
                         out.println("(length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
-                        // System.out.println("Esto date diferente " + (!tipoJava.equals("Date") ||
-                        // !tipoJava.equals("Timestamp")) );
 
                     }
                     if (rsmetadatos.isNullable(i) == 1 && (tipoJava.equals("Date") || tipoJava.equals("Timestamp"))) {
@@ -192,7 +182,7 @@ public class generadorEntidades {
 
                     out.println("");
                 }
-               
+
                 while (relaciones.next()) {
 
                     camelCaseRelacionesCampo = utilitarios.camelCase(relaciones.getString(3));
@@ -203,7 +193,6 @@ public class generadorEntidades {
                     System.out.println("private " + utilitarios.generaMayusculaInicial(camelCaseRelacionesTabla) + " "
                             + camelCaseRelacionesCampo + ";");
                     System.out.println("");
-                    
 
                     out.println("@ManyToOne(fetch = FetchType.LAZY)");
                     out.println("@JoinColumn(name = " + relaciones.getString(3) + ", nullable = false)");
