@@ -67,11 +67,29 @@ public class generadorEntidades {
         //
         // ResultSet rs = st.executeQuery("select * from cusg."+nombre);
 
-        ResultSet rs = st.executeQuery("select * from cusg.contraparte");
+        ResultSet rs = st.executeQuery("select * from cusg.represent_legal");
 
         rsmetadatos = rs.getMetaData();
 
         int col = rsmetadatos.getColumnCount();
+
+        ResultSet relaciones = st.executeQuery("SELECT k1.table_schema,\n" + //
+                "       k1.table_name,\n" + //
+                "       k1.column_name,\n" + //
+                "       k2.table_schema AS referenced_table_schema,\n" + //
+                "       k2.table_name AS referenced_table_name,\n" + //
+                "       k2.column_name AS referenced_column_name\n" + //
+                "FROM information_schema.key_column_usage k1\n" + //
+                "JOIN information_schema.referential_constraints fk USING (constraint_schema, constraint_name)\n" + //
+                "JOIN information_schema.key_column_usage k2\n" + //
+                "  ON k2.constraint_schema = fk.unique_constraint_schema\n" + //
+                " AND k2.constraint_name = fk.unique_constraint_name\n" + //
+                " AND k2.ordinal_position = k1.position_in_unique_constraint\n" + //
+                " where k1.table_name ='represent_legal';");
+
+        String camelCaseRelacionesCampo = null;
+        String camelCaseRelacionesTabla = null;
+
 
         System.out.println("Columnas: " + col);
 
@@ -120,7 +138,7 @@ public class generadorEntidades {
                 // obteniendo numero de columnas
 
                 // String tipo = null;
-                 
+
                 for (int i = 1; i <= col; i++) {
                     // out.println(" @Column(nullable = false, updatable = false, length = 4)");
 
@@ -128,57 +146,72 @@ public class generadorEntidades {
 
                     String nombreCamelcase = utilitarios.camelCase(rsmetadatos.getColumnName(i));
 
-                   // System.out.println(" null " + rsmetadatos.isNullable(i));
-                   // System.out.println("tipo java es " + tipoJava);
-                   // System.out.println("");
+                    // System.out.println(" null " + rsmetadatos.isNullable(i));
+                    // System.out.println("tipo java es " + tipoJava);
+                    // System.out.println("");
 
-                   
-                   
-                     System. out.print("@Column");
-                    if(rsmetadatos.isNullable(i)==0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")){
+                    System.out.print("@Column");
+                    if (rsmetadatos.isNullable(i) == 0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")) {
                         System.out.println("(nullable = false)");
                     }
-                    if(rsmetadatos.isNullable(i)==0 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp")) ){
-                        System.out.println("(nullable = false, length = " + rsmetadatos.getColumnDisplaySize(i)+")");
+                    if (rsmetadatos.isNullable(i) == 0 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))) {
+                        System.out.println("(nullable = false, length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
                     }
-                    if(rsmetadatos.isNullable(i)==1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))){
-                        System.out.println("(length = " + rsmetadatos.getColumnDisplaySize(i)+")");
-                      //  System.out.println("Esto date diferente " + (!tipoJava.equals("Date") || !tipoJava.equals("Timestamp")) );
-                      
+                    if (rsmetadatos.isNullable(i) == 1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))) {
+                        System.out.println("(length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
+                        // System.out.println("Esto date diferente " + (!tipoJava.equals("Date") ||
+                        // !tipoJava.equals("Timestamp")) );
+
                     }
-                    if(rsmetadatos.isNullable(i)==1 && (tipoJava.equals("Date") && tipoJava.equals("Timestamp")) ){
+                    if (rsmetadatos.isNullable(i) == 1 && (tipoJava.equals("Date") && tipoJava.equals("Timestamp"))) {
                         System.out.println("\n");
                     }
 
-                    System.out.println("private " + tipoJava + " " + nombreCamelcase+";");
-                  
-                    
-                 
-               
+                    System.out.println("private " + tipoJava + " " + nombreCamelcase + ";");
+
                     out.print("@Column");
 
                     System.out.println("");
-                    if(rsmetadatos.isNullable(i)==0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")){
+                    if (rsmetadatos.isNullable(i) == 0 && tipoJava.equals("Date") && tipoJava.equals("Timestamp")) {
                         out.println("(nullable = false)");
                     }
-                    if(rsmetadatos.isNullable(i)==0 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp")) ){
-                        out.println("(nullable = false, length = " + rsmetadatos.getColumnDisplaySize(i)+")");
+                    if (rsmetadatos.isNullable(i) == 0 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))) {
+                        out.println("(nullable = false, length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
                     }
-                    if(rsmetadatos.isNullable(i)==1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))){
-                        out.println("(length = " + rsmetadatos.getColumnDisplaySize(i)+")");
-                      //  System.out.println("Esto date diferente " + (!tipoJava.equals("Date") || !tipoJava.equals("Timestamp")) );
-                      
+                    if (rsmetadatos.isNullable(i) == 1 && (!tipoJava.equals("Date") && !tipoJava.equals("Timestamp"))) {
+                        out.println("(length = " + rsmetadatos.getColumnDisplaySize(i) + ")");
+                        // System.out.println("Esto date diferente " + (!tipoJava.equals("Date") ||
+                        // !tipoJava.equals("Timestamp")) );
+
                     }
-                    if(rsmetadatos.isNullable(i)==1 && (tipoJava.equals("Date") || tipoJava.equals("Timestamp")) ){
+                    if (rsmetadatos.isNullable(i) == 1 && (tipoJava.equals("Date") || tipoJava.equals("Timestamp"))) {
                         out.println("");
                     }
-                    
-                    out.println("private " + tipoJava + " " + nombreCamelcase+";");
-                  
-                
+
+                    out.println("private " + tipoJava + " " + nombreCamelcase + ";");
+
                     out.println("");
-                }    
-                
+                }
+               
+                while (relaciones.next()) {
+
+                    camelCaseRelacionesCampo = utilitarios.camelCase(relaciones.getString(3));
+                    camelCaseRelacionesTabla = utilitarios.camelCase(relaciones.getString(5));
+
+                    System.out.println("@ManyToOne(fetch = FetchType.LAZY)");
+                    System.out.println("@JoinColumn(name = " + relaciones.getString(3) + ", nullable = false)");
+                    System.out.println("private " + utilitarios.generaMayusculaInicial(camelCaseRelacionesTabla) + " "
+                            + camelCaseRelacionesCampo + ";");
+                    System.out.println("");
+                    
+
+                    out.println("@ManyToOne(fetch = FetchType.LAZY)");
+                    out.println("@JoinColumn(name = " + relaciones.getString(3) + ", nullable = false)");
+                    out.println("private " + utilitarios.generaMayusculaInicial(camelCaseRelacionesTabla) + " "
+                            + camelCaseRelacionesCampo + ";");
+                    out.println("");
+
+                }
                 out.println("}");
 
             } catch (IOException e) {

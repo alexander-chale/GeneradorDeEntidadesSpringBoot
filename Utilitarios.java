@@ -16,6 +16,7 @@ public class Utilitarios {
                    return tipoJava;
     }
 
+   
 
     public String generaMayusculaInicial(String palabra) {
         // Coloca la primera letra de la entidad en mayúscula para poder generar las

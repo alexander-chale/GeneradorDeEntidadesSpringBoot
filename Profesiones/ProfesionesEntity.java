@@ -28,23 +28,67 @@ public class Profesiones extends Base {
 
    @Id
 
-   @Column(nullable = false, length = 11)
-   private Integer coLista;
+@Column(nullable = false, length = 255)
+private String coRifUsuaCont;
 
-   @Column(nullable = false, length = 11)
-   private Integer coEnteLista;
+@Column(nullable = false, length = 14)
+private String coRifRepLegal;
 
-   @Column(length = 14)
-   private String coRifUsuaCont;
+@Column(length = 4)
+private String codigoProfesion;
 
-   @Column(length = 13)
-   private Date feConsultaLista;
+@Column(length = 20)
+private Long coNacionalidad;
 
-   @Column(length = 100)
-   private String txExplicaLista;
+@Column(length = 14)
+private String nuCiRepLegal;
 
-   @Column(length = 14)
-   private String coRifUsuaContId;
+@Column(nullable = false, length = 50)
+private String nbRepLegal;
 
+@Column(length = 50)
+private String nbCargoRepLegal;
+
+@Column(length = 12)
+private String nuPasapRepLegal;
+
+@Column(nullable = false, length = 255)
+private String inEdoCivilRep;
+
+@Column(length = 50)
+private String diRepLegal;
+
+@Column(nullable = false, length = 15)
+private String nuTlfLocalRep;
+
+@Column(nullable = false, length = 15)
+private String nuTlfCelRep;
+
+@Column(nullable = false, length = 30)
+private String txEmailRep;
+
+@Column(length = 14)
+private String nuCiConyuge;
+
+@Column(length = 50)
+private String nbConyugeRep;
+
+@Column(nullable = false, length = 100)
+private String txAutorizadoRep;
+
+@Column(length = 50)
+private String txDatoDocRep;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = co_rif_usua_cont, nullable = false)
+private Contraparte coRifUsuaCont;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = co_nacionalidad, nullable = false)
+private Nacionalidad coNacionalidad;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = codigo_profesion, nullable = false)
+private Profesiones codigoProfesion;
 
 }
